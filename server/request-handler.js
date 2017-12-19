@@ -12,6 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 var messages = [];
+var objectId = 1;
 
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
@@ -53,7 +54,10 @@ var requestHandler = function(request, response) {
 
     request.on('end', function() {
       body = body.toString();
-      messages.push(JSON.parse(body));
+      var parsed = JSON.parse(body)
+      parsed.objectId = objectId;
+      objectId++;
+      messages.push(parsed);
       response.writeHead(201, headers);
       response.end(body);
     });
