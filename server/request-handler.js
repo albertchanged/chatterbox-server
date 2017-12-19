@@ -11,6 +11,47 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var messages = [];
+
+var handlePOST = function(request) {
+  //// Check length of url ////
+  var url = request.url;
+  
+  if (url.length > 17) {
+    url = url.slice(21);
+  }
+
+  if (url === '/classes/messages') {
+    messages.push(request._postData);
+    return 201;
+  } else {
+    return 404;
+  }
+};
+
+var handleGET = function(request) {
+  var url = request.url;
+  debugger;
+  console.log('request', request);
+  console.log('full url', url);
+  
+  if (url.length > 17) {
+    var surl = url.slice(21);
+    var lurl = ur.slice(0, 21);
+  }
+
+  console.log('short url', surl);
+  console.log('long url', lurl);
+
+  if (url === '/classes/messages') {
+    var messageObject = {};
+    messageObject['results'] = messages;
+    return messageObject;
+  } else {
+    return 404;
+  }
+}
+
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -35,6 +76,16 @@ var requestHandler = function(request, response) {
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
+  if (request.method === 'POST' || request.method === 'OPTIONS') {
+    statusCode = handlePOST(request);
+  } else if (request.method === 'GET' || request.method === 'OPTIONS') {
+    var getResult = handleGET(request);
+    if (getResult === 404) {
+      statusCode = 404;
+    }
+  } else {
+    statusCode = 404;
+  }
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
@@ -45,6 +96,7 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
+
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +104,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  response.end(JSON.stringify(getResult));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -71,3 +123,4 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+exports.requestHandler = requestHandler;
