@@ -1,16 +1,12 @@
 /*************************************************************
-
 You should implement your request handler function in this file.
-
 requestHandler is already getting passed to http.createServer()
 in basic-server.js, but it won't work as is.
-
 You'll have to figure out a way to export this function from
 this file and include it in basic-server.js so that it actually works.
-
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
-
 **************************************************************/
+var fs = require('fs');
 var messages = [];
 var objectId = 1;
 
@@ -44,6 +40,18 @@ var requestHandler = function(request, response) {
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
+  // fs.readFile('./client/hrsf86-chatterbox-client-solution/client/index.html', function(err, data) {
+  //   response.writeHead(200, {'Content-Type': 'text/html'});
+  //   response.write(data);
+  //   response.on('end', function() {
+  //     return response.end();
+  //   })
+  //   // if (err) throw err;
+  //   // console.log(data);
+
+  //   // return response.end();
+  // });
+
   if (request.method === 'POST' && request.url === '/classes/messages') {
     var url = request.url;
     var body = [];
@@ -54,11 +62,16 @@ var requestHandler = function(request, response) {
 
     request.on('end', function() {
       body = body.toString();
-      var parsed = JSON.parse(body)
-      parsed.objectId = objectId;
-      objectId++;
-      messages.push(parsed);
-      response.writeHead(201, headers);
+      var parsed = JSON.parse(body);
+
+      if (typeof parsed === 'object') {
+        parsed.objectId = objectId;
+        objectId++;
+        messages.push(parsed);
+        response.writeHead(201, headers);
+      } else {
+        response.writeHead(404, headers);
+      }
       response.end(body);
     });
   } else if (request.method === 'GET' && request.url === '/classes/messages') {
